@@ -12,7 +12,7 @@ mvn clean compile test assembly:single
 ```
 2. Next step is to run the jar file. The output from web crawl is printed to the console. 
 ```
-java -jar .\target\web_crawler_vishvesh-1.0-SNAPSHOT-jar-with-dependencies.jar arg1 arg2</br>
+java -jar .\target\web_crawler_vishvesh-1.0-SNAPSHOT-jar-with-dependencies.jar arg1 arg2
 ```
 The command takes 2 arguments first argument (arg1) is the seed URL to start the web crawl. The second argument (arg2) is an optional parameter which indicates the maximum number of web pages to search. If not provided the default value is 2147483647. Following is an example for the command with http://www.rescale.com as seed URL and maximum number of pages to be searched as 10.
 ```
