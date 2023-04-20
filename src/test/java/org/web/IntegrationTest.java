@@ -1,4 +1,4 @@
-package org.example;
+package org.web;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,8 +11,8 @@ import org.mockserver.model.HttpStatusCode;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.example.IntegrationTestHelper.htmlPageMap;
-import static org.example.IntegrationTestHelper.numOfChildURLsForPage;
+import static org.web.IntegrationTestHelper.htmlPageMap;
+import static org.web.IntegrationTestHelper.numOfChildURLsForPage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class IntegrationTest {
@@ -55,7 +55,8 @@ public class IntegrationTest {
 
     @Test
     public void test() throws InterruptedException {
-
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        System.out.println("Starting Integration Test");
         // Seed URL to start
         final String seedURL = "http://localhost:8080/page1";
         // Capture standard out
@@ -63,13 +64,10 @@ public class IntegrationTest {
         ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
         // Arguments for main method
-        String[] args = new String[]{seedURL,"10"};
+        String[] args = new String[]{seedURL,"3"};
 
         // Begin test
         Main.main(args);
-
-        // Wait for all threads to finish
-        Thread.sleep(3000);
         System.setOut(standardOut);
 
         String out = outputStreamCaptor.toString();
@@ -82,7 +80,7 @@ public class IntegrationTest {
         String crawls[] = crawlResult.split("\n\r\n");
 
         // Validate 8 Pages are visited
-        assertEquals(8, crawls.length);
+        assertEquals(6, crawls.length);
 
         // Validate number of child URLs for parent URL
         for(String crawl : crawls){
@@ -94,10 +92,10 @@ public class IntegrationTest {
 
         final String ANSI_GREEN = "\u001B[32m";
         final String ANSI_RESET = "\u001B[0m";
+
+        System.out.println("Integration test complete. Following output generated.\n");
+        System.out.println(ANSI_GREEN+out.trim()+ANSI_RESET);
         System.out.println(">>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        System.out.println(ANSI_GREEN+"Integration test complete. Following output generated.\n");
-        System.out.println(out.trim());
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"+ANSI_RESET);
 
     }
 

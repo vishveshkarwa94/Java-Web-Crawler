@@ -1,13 +1,16 @@
-package org.example.Util;
+package org.web.Util;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 public class ThreadManagementService {
@@ -18,11 +21,12 @@ public class ThreadManagementService {
     // Set to store visited URLS.
     static protected Set<String> seenURLS;
 
-    // Variable to keep track of pages visited.
-    static protected int numTasks;
+    // Property to store max number of web pages to visit.
+    static protected int maxDepth;
 
-    // variable to store max number of web pages to visit.
-    static protected int maxPagesToCrawl;
+    // Property to store the time when last task was submitted to the execution service.
+    static protected Instant lastTaskExecuted;
+
 
     /**
      * Function to initialize the Execution Service and submit first URL to be crawled.
@@ -32,13 +36,14 @@ public class ThreadManagementService {
     public static void initializeExecutionService(int max, String URL){
         if(executorService != null){
             System.out.println("WARNING: Execution service already initialized.");
+            return;
         }
         if(!checkIfCanReachSeedURL(URL)) return;
         executorService = Executors.newCachedThreadPool();
         seenURLS = new HashSet<>();
-        numTasks = 0;
-        maxPagesToCrawl = max;
-        submitTask(URL);
+        maxDepth = max;
+        submitTask(URL, 1);
+        new ExecutionServiceMonitor().run();
     }
 
     /**
@@ -46,7 +51,7 @@ public class ThreadManagementService {
      * @param URL : URL of the web page that is to be searched for URLs.
      */
 
-    public static void submitTask(String URL){
+    public static void submitTask(String URL, int currentDepth){
 
         if(executorService == null) {
             System.out.println("WARNING: Execution Service not initialized.");
@@ -55,17 +60,11 @@ public class ThreadManagementService {
         try{
             if(executorService.isShutdown()) return;
             if(checkIfURLVisited(URL)) return;
-            if(checkNumTasks()){
-                executorService.shutdown();
-                return;
-            }
             addToSeenURLHashSet(URL);
-            executorService.submit(new DocumentParserTask(URL));
-            incrementNumTasks();
+            updateLastExecutionTime();
+            executorService.submit(new DocumentParserTask(URL, currentDepth, maxDepth));
         }
-        catch (Exception e) {
-            System.out.println(e);
-        }
+        catch (Exception e) {}
     }
 
     /**
@@ -90,23 +89,15 @@ public class ThreadManagementService {
     }
 
     /**
-     * Function to increment numTasks when new web page is visited.
+     * Update last task execution time.
      */
-    private static synchronized void incrementNumTasks(){
-        numTasks++;
-    }
-
-    /**
-     * Function to check if maximum number of web page visit has been reached.
-     * @return : If maximum number of web page visit has been reached.
-     */
-    private static synchronized boolean checkNumTasks(){
-        return numTasks >= maxPagesToCrawl;
+    private static synchronized void updateLastExecutionTime(){
+        lastTaskExecuted = Instant.now();
     }
 
     /**
      * Function to check if seed URL is valid and reachable.
-     * @param URLString : Seed URL
+     * @param URLString : Seed URL.
      * @return : If seed URL is valid and reachable.
      */
     private static boolean checkIfCanReachSeedURL(String URLString){

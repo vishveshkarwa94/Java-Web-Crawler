@@ -1,4 +1,4 @@
-package org.example.Util;
+package org.web.Util;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -6,14 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.mockserver.model.*;
 import org.mockserver.integration.ClientAndServer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -48,12 +47,12 @@ public class DocumentParserTaskTests {
     public void searchForURLTest(){
 
         // Functions returns all the valid URLs
-        DocumentParserTask task = new DocumentParserTask("http://localhost:8080");
+        DocumentParserTask task = new DocumentParserTask("http://localhost:8080",1,2);
         List<String> urls = task.searchForURL();
         assertEquals(2, urls.size());
 
         // Function returns null for in valid URL
-        task = new DocumentParserTask("dummy:8080");
+        task = new DocumentParserTask("dummy:8080",1,1);
         urls = task.searchForURL();
         assertNull(urls);
     }
@@ -69,14 +68,11 @@ public class DocumentParserTaskTests {
         // Verify task is submitted for each valid URL found on page.
         try(MockedStatic<ThreadManagementService> mockedStatic = Mockito.mockStatic(ThreadManagementService.class)){
             final int[] count = {0};
-            mockedStatic.when(()->ThreadManagementService.submitTask(any())).then(new Answer<Void>() {
-                @Override
-                public Void answer(InvocationOnMock invocationOnMock) {
-                    count[0]++;
-                    return null;
-                }
+            mockedStatic.when(()->ThreadManagementService.submitTask(anyString(),anyInt())).then((Answer<Void>) invocationOnMock -> {
+                count[0]++;
+                return null;
             });
-            DocumentParserTask task = new DocumentParserTask("http://localhost:8080");
+            DocumentParserTask task = new DocumentParserTask("http://localhost:8080",1,2);
             task.run();
             assertEquals(2, count[0]);
         }
