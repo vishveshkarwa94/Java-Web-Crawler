@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.web.Util.ThreadManagementService.submitTask;
+import static org.web.Util.ThreadManagementService.updateLastExecutionTime;
 
 
 /**
@@ -86,6 +87,7 @@ public class DocumentParserTask implements Runnable{
             // If depth not reached create tasks for sub URLs
             if(currentDepth < maxDepth) submitTask(subURL, currentDepth+1);
         }
+        updateLastExecutionTime();
         System.out.println(stringBuilder);
     }
 }

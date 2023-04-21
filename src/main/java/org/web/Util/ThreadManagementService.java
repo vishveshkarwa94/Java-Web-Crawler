@@ -43,6 +43,7 @@ public class ThreadManagementService {
         seenURLS = new HashSet<>();
         maxDepth = max;
         submitTask(URL, 1);
+        updateLastExecutionTime();
         new ExecutionServiceMonitor().run();
     }
 
@@ -61,7 +62,6 @@ public class ThreadManagementService {
             if(executorService.isShutdown()) return;
             if(checkIfURLVisited(URL)) return;
             addToSeenURLHashSet(URL);
-            updateLastExecutionTime();
             executorService.submit(new DocumentParserTask(URL, currentDepth, maxDepth));
         }
         catch (Exception e) {}
@@ -91,7 +91,7 @@ public class ThreadManagementService {
     /**
      * Update last task execution time.
      */
-    private static synchronized void updateLastExecutionTime(){
+    protected static synchronized void updateLastExecutionTime(){
         lastTaskExecuted = Instant.now();
     }
 
